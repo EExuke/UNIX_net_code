@@ -71,7 +71,7 @@
 #define HAVE_IF_NAMETOINDEX_PROTO 1
 
 /* Define to 1 if you have the `inet6_rth_init' function. */
-#define HAVE_INET6_RTH_INIT 1
+//#define HAVE_INET6_RTH_INIT 1
 
 /* Define to 1 if you have the `inet_aton' function. */
 #define HAVE_INET_ATON 1

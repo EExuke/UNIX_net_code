@@ -34,6 +34,9 @@ int main(int argc, const char *argv[])
 	my_debug_msg("| test 1: daytime_tcp_cli6 ==>");
 	daytime_tcp_cli6("::1");
 
+	/*my_debug_msg("| test 1: daytime_tcp_srv ==>");*/
+	/*daytime_tcp_srv();*/  //in loop
+
 	return 0;
 }
 

@@ -16,6 +16,7 @@
 ** ************************************************************************** */
 
 #include "unp.h"
+#include <time.h>
 
 // functions
 /***************************************************************************************
@@ -96,5 +97,35 @@ int daytime_tcp_cli6(const char *ip6_addr)
 	}
 
 	return 0;
+}
+
+/***************************************************************************************
+ * Description   :
+ ***************************************************************************************/
+int daytime_tcp_srv()
+{
+	int listenfd, connfd;
+	struct sockaddr_in servaddr = {0};
+	char buff[MAXLINE];
+	time_t ticks;
+
+	listenfd = Socket(AF_INET, SOCK_STREAM, 0);
+
+	servaddr.sin_family = AF_INET;
+	servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+	servaddr.sin_port = htons(9970);  //my daytime server port
+
+	Bind(listenfd, (SA*)&servaddr, sizeof(servaddr));
+	Listen(listenfd, LISTENQ);
+
+	while (1) {
+		connfd = Accept(listenfd, (SA*)NULL, NULL);
+
+		ticks = time(NULL);
+		snprintf(buff, sizeof(buff), "daytime_tcp_srv: %.24s\r\n", ctime(&ticks));
+		Write(connfd, buff, strlen(buff));
+
+		Close(connfd);
+	}
 }
 

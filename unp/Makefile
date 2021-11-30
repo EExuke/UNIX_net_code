@@ -13,9 +13,11 @@ BIN_TARGET = unp_main_test
 
 CC = gcc
 CFLAGS = -g -Wall -I $(INC_SRC)
+LIBS = -pthread
+
 ${BIN_TARGET}: ${OBJ}
 	$(warning Building $(BIN_TARGET) ...)
-	@$(CC) $(OBJ) -o $@
+	@$(CC) $(OBJ) -o $@ ${LIBS}
 
 ${DIR_OBJ}/%.o: ${DIR_SRC}/%.c
 	$(warning Comping $< ...)

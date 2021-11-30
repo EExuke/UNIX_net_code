@@ -22,6 +22,7 @@
 
 int daytime_tcp_cli(const char *ip_addr);
 int daytime_tcp_cli6(const char *ip6_addr);
+int daytime_tcp_srv();
 
 /*------------------API Definition---------------------------*/
 /*------------------End of API Definition--------------------*/
