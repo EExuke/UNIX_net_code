@@ -21,6 +21,8 @@
 
 /*------------------Macro Definition-------------------------*/
 /*------------------End of Macro Definition------------------*/
+
+/*------------------API Definition---------------------------*/
 // wrapsock
 // define in unp.h
 
@@ -41,10 +43,6 @@ void Pthread_cond_timedwait(pthread_cond_t *, pthread_mutex_t *, const struct ti
 void Pthread_key_create(pthread_key_t *, void (*)(void *));
 void Pthread_setspecific(pthread_key_t, const void *);
 void Pthread_once(pthread_once_t *, void (*)(void));
-
-//
-
-/*------------------API Definition---------------------------*/
 /*------------------End of API Definition--------------------*/
 
 #endif /* End of _LIB_H_ */

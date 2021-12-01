@@ -16,6 +16,7 @@
 ** ************************************************************************** */
 
 #include "unp.h"
+#include "sum.h"
 
 // functions
 /***************************************************************************************
@@ -118,7 +119,7 @@ int tcp_cli01(char *ip_addr)
 	int sockfd;
 	struct sockaddr_in servaddr = {0};
 
-	if (ip_addr == NULL || ip_addr[0] = '\0') {
+	if (ip_addr == NULL || ip_addr[0] == '\0') {
 		err_quit("input ip_addr is error");
 	}
 
@@ -126,7 +127,7 @@ int tcp_cli01(char *ip_addr)
 
 	servaddr.sin_family = AF_INET;
 	servaddr.sin_port = htonl(SERV_PORT);
-	Inet_ntop(AF_INET, ip_addr, &servaddr.sin_addr);
+	Inet_pton(AF_INET, ip_addr, &servaddr.sin_addr);
 
 	Connect(sockfd, (SA*)&servaddr, sizeof(servaddr));
 
@@ -157,7 +158,7 @@ int tcp_cli04(char *ip_addr)
 	int i, sockfd[5];
 	struct sockaddr_in servaddr = {0};
 
-	if (ip_addr == NULL || ip_addr[0] = '\0') {
+	if (ip_addr == NULL || ip_addr[0] == '\0') {
 		err_quit("input ip_addr is error");
 	}
 
@@ -166,7 +167,7 @@ int tcp_cli04(char *ip_addr)
 
 		servaddr.sin_family = AF_INET;
 		servaddr.sin_port = htonl(SERV_PORT);
-		Inet_ntop(AF_INET, ip_addr, &servaddr.sin_addr);
+		Inet_pton(AF_INET, ip_addr, &servaddr.sin_addr);
 
 		Connect(sockfd[i], (SA*)&servaddr, sizeof(servaddr));
 	}
@@ -256,7 +257,7 @@ void str_cli11(FILE *fp, int sockfd)
 /***************************************************************************************
  * Description   : str_echo08
  ***************************************************************************************/
-void str_echo(int sockfd)
+void str_echo08(int sockfd)
 {
 	long arg1, arg2;
 	ssize_t n;
@@ -277,4 +278,45 @@ void str_echo(int sockfd)
 	}
 }
 
+/***************************************************************************************
+ * Description   : str_cli09
+ ***************************************************************************************/
+void str_cli09(FILE *fp, int sockfd)
+{
+	char sendline[MAXLINE];
+	struct args args;
+	struct result result;
+
+	while (Fgets(sendline, MAXLINE, fp) != NULL) {
+		if (sscanf(sendline, "%ld%ld", &args.arg1, &args.arg2) != 2) {
+			printf("invalid input: %s", sendline);
+			continue;
+		}
+		Writen(sockfd, &args, sizeof(args));
+
+		if (Readn(sockfd, &result, sizeof(result)) == 0) {
+			err_quit("str_cli: server terminated prematurely");
+		}
+		printf("%ld\n", result.sum);
+	}
+}
+
+/***************************************************************************************
+ * Description   : str_echo09
+ ***************************************************************************************/
+void str_echo09(int sockfd)
+{
+	ssize_t n;
+	struct args args;
+	struct result result;
+
+	while (1) {
+		if ( (n = Readn(sockfd, &args, sizeof(args))) == 0) {
+			return;		/* connection closed by other end */
+		}
+
+		result.sum = args.arg1 + args.arg2;
+		Writen(sockfd, &result, sizeof(result));
+	}
+}
 

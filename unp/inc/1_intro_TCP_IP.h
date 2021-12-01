@@ -20,11 +20,10 @@
 /*------------------Macro Definition-------------------------*/
 /*------------------End of Macro Definition------------------*/
 
+/*------------------API Definition---------------------------*/
 int daytime_tcp_cli(const char *ip_addr);
 int daytime_tcp_cli6(const char *ip6_addr);
 int daytime_tcp_srv();
-
-/*------------------API Definition---------------------------*/
 /*------------------End of API Definition--------------------*/
 
 #endif /* End of _1_INTRO_TCP_IP_H_ */
