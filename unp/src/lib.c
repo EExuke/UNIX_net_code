@@ -18,6 +18,12 @@
 #include "unp.h"
 #include "lib.h"
 
+#include	<sys/mman.h>
+#ifdef	HAVE_SOCKADDR_DL_STRUCT
+#include	<net/if_dl.h>
+#endif
+
+
 /***************************************************************************************
  * Functions: wrapsock.c
  * Socket wrapper functions.
@@ -500,8 +506,7 @@ void Pthread_setspecific(pthread_key_t key, const void *value)
  *warning: passing arg 2 of `bind' discards `const' from pointer target type
  *warning: passing arg 2 of `connect' discards `const' from pointer target type
  ***************************************************************************************/
-void *
-Calloc(size_t n, size_t size)
+void *Calloc(size_t n, size_t size)
 {
 	void	*ptr;
 
@@ -510,22 +515,19 @@ Calloc(size_t n, size_t size)
 	return(ptr);
 }
 
-void
-Close(int fd)
+void Close(int fd)
 {
 	if (close(fd) == -1)
 		err_sys("close error");
 }
 
-void
-Dup2(int fd1, int fd2)
+void Dup2(int fd1, int fd2)
 {
 	if (dup2(fd1, fd2) == -1)
 		err_sys("dup2 error");
 }
 
-int
-Fcntl(int fd, int cmd, int arg)
+int Fcntl(int fd, int cmd, int arg)
 {
 	int	n;
 
@@ -534,36 +536,32 @@ Fcntl(int fd, int cmd, int arg)
 	return(n);
 }
 
-void
-Gettimeofday(struct timeval *tv, void *foo)
+void Gettimeofday(struct timeval *tv, void *foo)
 {
 	if (gettimeofday(tv, foo) == -1)
 		err_sys("gettimeofday error");
 	return;
 }
 
-int
-Ioctl(int fd, int request, void *arg)
+int Ioctl(int fd, int request, void *arg)
 {
-	int		n;
+	int n;
 
 	if ( (n = ioctl(fd, request, arg)) == -1)
 		err_sys("ioctl error");
 	return(n);	/* streamio of I_LIST returns value */
 }
 
-pid_t
-Fork(void)
+pid_t Fork(void)
 {
-	pid_t	pid;
+	pid_t pid;
 
-	if ( (pid = fork()) == -1)
+	if ((pid = fork()) == -1)
 		err_sys("fork error");
 	return(pid);
 }
 
-void *
-Malloc(size_t size)
+void *Malloc(size_t size)
 {
 	void	*ptr;
 
@@ -572,8 +570,7 @@ Malloc(size_t size)
 	return(ptr);
 }
 
-int
-Mkstemp(char *template)
+int Mkstemp(char *template)
 {
 	int i;
 
@@ -589,10 +586,7 @@ Mkstemp(char *template)
 	return i;
 }
 
-#include	<sys/mman.h>
-
-void *
-Mmap(void *addr, size_t len, int prot, int flags, int fd, off_t offset)
+void *Mmap(void *addr, size_t len, int prot, int flags, int fd, off_t offset)
 {
 	void	*ptr;
 
@@ -601,8 +595,7 @@ Mmap(void *addr, size_t len, int prot, int flags, int fd, off_t offset)
 	return(ptr);
 }
 
-int
-Open(const char *pathname, int oflag, mode_t mode)
+int Open(const char *pathname, int oflag, mode_t mode)
 {
 	int		fd;
 
@@ -611,15 +604,13 @@ Open(const char *pathname, int oflag, mode_t mode)
 	return(fd);
 }
 
-void
-Pipe(int *fds)
+void Pipe(int *fds)
 {
 	if (pipe(fds) < 0)
 		err_sys("pipe error");
 }
 
-ssize_t
-Read(int fd, void *ptr, size_t nbytes)
+ssize_t Read(int fd, void *ptr, size_t nbytes)
 {
 	ssize_t		n;
 
@@ -628,36 +619,31 @@ Read(int fd, void *ptr, size_t nbytes)
 	return(n);
 }
 
-void
-Sigaddset(sigset_t *set, int signo)
+void Sigaddset(sigset_t *set, int signo)
 {
 	if (sigaddset(set, signo) == -1)
 		err_sys("sigaddset error");
 }
 
-void
-Sigdelset(sigset_t *set, int signo)
+void Sigdelset(sigset_t *set, int signo)
 {
 	if (sigdelset(set, signo) == -1)
 		err_sys("sigdelset error");
 }
 
-void
-Sigemptyset(sigset_t *set)
+void Sigemptyset(sigset_t *set)
 {
 	if (sigemptyset(set) == -1)
 		err_sys("sigemptyset error");
 }
 
-void
-Sigfillset(sigset_t *set)
+void Sigfillset(sigset_t *set)
 {
 	if (sigfillset(set) == -1)
 		err_sys("sigfillset error");
 }
 
-int
-Sigismember(const sigset_t *set, int signo)
+int Sigismember(const sigset_t *set, int signo)
 {
 	int		n;
 
@@ -666,22 +652,19 @@ Sigismember(const sigset_t *set, int signo)
 	return(n);
 }
 
-void
-Sigpending(sigset_t *set)
+void Sigpending(sigset_t *set)
 {
 	if (sigpending(set) == -1)
 		err_sys("sigpending error");
 }
 
-void
-Sigprocmask(int how, const sigset_t *set, sigset_t *oset)
+void Sigprocmask(int how, const sigset_t *set, sigset_t *oset)
 {
 	if (sigprocmask(how, set, oset) == -1)
 		err_sys("sigprocmask error");
 }
 
-char *
-Strdup(const char *str)
+char *Strdup(const char *str)
 {
 	char	*ptr;
 
@@ -690,8 +673,7 @@ Strdup(const char *str)
 	return(ptr);
 }
 
-long
-Sysconf(int name)
+long Sysconf(int name)
 {
 	long	val;
 
@@ -702,8 +684,7 @@ Sysconf(int name)
 }
 
 #ifdef	HAVE_SYS_SYSCTL_H
-void
-Sysctl(int *name, u_int namelen, void *oldp, size_t *oldlenp,
+void Sysctl(int *name, u_int namelen, void *oldp, size_t *oldlenp,
 	   void *newp, size_t newlen)
 {
 	if (sysctl(name, namelen, oldp, oldlenp, newp, newlen) == -1)
@@ -711,15 +692,13 @@ Sysctl(int *name, u_int namelen, void *oldp, size_t *oldlenp,
 }
 #endif
 
-void
-Unlink(const char *pathname)
+void Unlink(const char *pathname)
 {
 	if (unlink(pathname) == -1)
 		err_sys("unlink error for %s", pathname);
 }
 
-pid_t
-Wait(int *iptr)
+pid_t Wait(int *iptr)
 {
 	pid_t	pid;
 
@@ -728,8 +707,7 @@ Wait(int *iptr)
 	return(pid);
 }
 
-pid_t
-Waitpid(pid_t pid, int *iptr, int options)
+pid_t Waitpid(pid_t pid, int *iptr, int options)
 {
 	pid_t	retpid;
 
@@ -738,10 +716,538 @@ Waitpid(pid_t pid, int *iptr, int options)
 	return(retpid);
 }
 
-void
-Write(int fd, void *ptr, size_t nbytes)
+void Write(int fd, void *ptr, size_t nbytes)
 {
 	if (write(fd, ptr, nbytes) != nbytes)
 		err_sys("write error");
 }
 
+/***************************************************************************************
+ * Functions: sock_ntop.c
+***************************************************************************************/
+char *sock_ntop(const struct sockaddr *sa, socklen_t salen)
+{
+	char portstr[8];
+	static char str[128];		/* Unix domain is largest */
+
+	switch (sa->sa_family) {
+	case AF_INET: {
+		struct sockaddr_in	*sin = (struct sockaddr_in *) sa;
+
+		if (inet_ntop(AF_INET, &sin->sin_addr, str, sizeof(str)) == NULL)
+			return(NULL);
+		if (ntohs(sin->sin_port) != 0) {
+			snprintf(portstr, sizeof(portstr), ":%d", ntohs(sin->sin_port));
+			strcat(str, portstr);
+		}
+		return(str);
+	}
+
+#ifdef	IPV6
+	case AF_INET6: {
+		struct sockaddr_in6	*sin6 = (struct sockaddr_in6 *) sa;
+
+		str[0] = '[';
+		if (inet_ntop(AF_INET6, &sin6->sin6_addr, str + 1, sizeof(str) - 1) == NULL)
+			return(NULL);
+		if (ntohs(sin6->sin6_port) != 0) {
+			snprintf(portstr, sizeof(portstr), "]:%d", ntohs(sin6->sin6_port));
+			strcat(str, portstr);
+			return(str);
+		}
+		return (str + 1);
+	}
+#endif
+
+#ifdef	AF_UNIX
+	case AF_UNIX: {
+		struct sockaddr_un	*unp = (struct sockaddr_un *) sa;
+
+			/* OK to have no pathname bound to the socket: happens on
+			   every connect() unless client calls bind() first. */
+		if (unp->sun_path[0] == 0)
+			strcpy(str, "(no pathname bound)");
+		else
+			snprintf(str, sizeof(str), "%s", unp->sun_path);
+		return(str);
+	}
+#endif
+
+#ifdef	HAVE_SOCKADDR_DL_STRUCT
+	case AF_LINK: {
+		struct sockaddr_dl	*sdl = (struct sockaddr_dl *) sa;
+
+		if (sdl->sdl_nlen > 0)
+			snprintf(str, sizeof(str), "%*s (index %d)",
+					 sdl->sdl_nlen, &sdl->sdl_data[0], sdl->sdl_index);
+		else
+			snprintf(str, sizeof(str), "AF_LINK, index=%d", sdl->sdl_index);
+		return(str);
+	}
+#endif
+	default:
+		snprintf(str, sizeof(str), "sock_ntop: unknown AF_xxx: %d, len %d",
+				 sa->sa_family, salen);
+		return(str);
+	}
+    return (NULL);
+}
+
+char *Sock_ntop(const struct sockaddr *sa, socklen_t salen)
+{
+	char *ptr;
+
+	if ((ptr = sock_ntop(sa, salen)) == NULL) {
+		err_sys("sock_ntop error");	/* inet_ntop() sets errno */
+	}
+	return(ptr);
+}
+
+/***************************************************************************************
+ * Functions: sock_bind_wild.c
+***************************************************************************************/
+int sock_bind_wild(int sockfd, int family)
+{
+	socklen_t	len;
+
+	switch (family) {
+	case AF_INET: {
+		struct sockaddr_in	sin;
+
+		bzero(&sin, sizeof(sin));
+		sin.sin_family = AF_INET;
+		sin.sin_addr.s_addr = htonl(INADDR_ANY);
+		sin.sin_port = htons(0);	/* bind ephemeral port */
+
+		if (bind(sockfd, (SA *) &sin, sizeof(sin)) < 0)
+			return(-1);
+		len = sizeof(sin);
+		if (getsockname(sockfd, (SA *) &sin, &len) < 0)
+			return(-1);
+		return(sin.sin_port);
+	}
+
+#ifdef	IPV6
+	case AF_INET6: {
+		struct sockaddr_in6	sin6;
+
+		bzero(&sin6, sizeof(sin6));
+		sin6.sin6_family = AF_INET6;
+		sin6.sin6_addr = in6addr_any;
+		sin6.sin6_port = htons(0);	/* bind ephemeral port */
+
+		if (bind(sockfd, (SA *) &sin6, sizeof(sin6)) < 0)
+			return(-1);
+		len = sizeof(sin6);
+		if (getsockname(sockfd, (SA *) &sin6, &len) < 0)
+			return(-1);
+		return(sin6.sin6_port);
+	}
+#endif
+	}
+	return(-1);
+}
+
+int Sock_bind_wild(int sockfd, int family)
+{
+	int		port;
+
+	if ( (port = sock_bind_wild(sockfd, family)) < 0)
+		err_sys("sock_bind_wild error");
+
+	return(port);
+}
+
+/***************************************************************************************
+ * Functions: sock_cmp_addr.c
+***************************************************************************************/
+int sock_cmp_addr(const struct sockaddr *sa1, const struct sockaddr *sa2, socklen_t salen)
+{
+	if (sa1->sa_family != sa2->sa_family)
+		return(-1);
+
+	switch (sa1->sa_family) {
+	case AF_INET: {
+		return(memcmp( &((struct sockaddr_in *) sa1)->sin_addr,
+					   &((struct sockaddr_in *) sa2)->sin_addr,
+					   sizeof(struct in_addr)));
+	}
+
+#ifdef	IPV6
+	case AF_INET6: {
+		return(memcmp( &((struct sockaddr_in6 *) sa1)->sin6_addr,
+					   &((struct sockaddr_in6 *) sa2)->sin6_addr,
+					   sizeof(struct in6_addr)));
+	}
+#endif
+
+#ifdef	AF_UNIX
+	case AF_UNIX: {
+		return(strcmp( ((struct sockaddr_un *) sa1)->sun_path,
+					   ((struct sockaddr_un *) sa2)->sun_path));
+	}
+#endif
+
+#ifdef	HAVE_SOCKADDR_DL_STRUCT
+	case AF_LINK: {
+		return(-1);		/* no idea what to compare here ? */
+	}
+#endif
+	}
+    return (-1);
+}
+
+/***************************************************************************************
+ * Functions: sock_cmp_port.c
+***************************************************************************************/
+int sock_cmp_port(const struct sockaddr *sa1, const struct sockaddr *sa2, socklen_t salen)
+{
+	if (sa1->sa_family != sa2->sa_family)
+		return(-1);
+
+	switch (sa1->sa_family) {
+	case AF_INET: {
+		return( ((struct sockaddr_in *) sa1)->sin_port ==
+				((struct sockaddr_in *) sa2)->sin_port);
+	}
+
+#ifdef	IPV6
+	case AF_INET6: {
+		return( ((struct sockaddr_in6 *) sa1)->sin6_port ==
+				((struct sockaddr_in6 *) sa2)->sin6_port);
+	}
+#endif
+
+	}
+    return (-1);
+}
+
+/***************************************************************************************
+ * Functions: sock_get_port.c
+***************************************************************************************/
+int sock_get_port(const struct sockaddr *sa, socklen_t salen)
+{
+	switch (sa->sa_family) {
+		case AF_INET: {
+			struct sockaddr_in *sin = (struct sockaddr_in *) sa;
+			return(sin->sin_port);
+		}
+#ifdef	IPV6
+		case AF_INET6: {
+			struct sockaddr_in6	*sin6 = (struct sockaddr_in6 *) sa;
+			return(sin6->sin6_port);
+		}
+#endif
+	}
+
+	return(-1); /* ??? */
+}
+
+/***************************************************************************************
+ * Functions: sock_ntop_host.c
+***************************************************************************************/
+char *sock_ntop_host(const struct sockaddr *sa, socklen_t salen)
+{
+	static char str[128];		/* Unix domain is largest */
+
+	switch (sa->sa_family) {
+	case AF_INET: {
+		struct sockaddr_in	*sin = (struct sockaddr_in *) sa;
+
+		if (inet_ntop(AF_INET, &sin->sin_addr, str, sizeof(str)) == NULL)
+			return(NULL);
+		return(str);
+	}
+
+#ifdef	IPV6
+	case AF_INET6: {
+		struct sockaddr_in6	*sin6 = (struct sockaddr_in6 *) sa;
+
+		if (inet_ntop(AF_INET6, &sin6->sin6_addr, str, sizeof(str)) == NULL)
+			return(NULL);
+		return(str);
+	}
+#endif
+
+#ifdef	AF_UNIX
+	case AF_UNIX: {
+		struct sockaddr_un	*unp = (struct sockaddr_un *) sa;
+
+			/* OK to have no pathname bound to the socket: happens on
+			   every connect() unless client calls bind() first. */
+		if (unp->sun_path[0] == 0)
+			strcpy(str, "(no pathname bound)");
+		else
+			snprintf(str, sizeof(str), "%s", unp->sun_path);
+		return(str);
+	}
+#endif
+
+#ifdef	HAVE_SOCKADDR_DL_STRUCT
+	case AF_LINK: {
+		struct sockaddr_dl	*sdl = (struct sockaddr_dl *) sa;
+
+		if (sdl->sdl_nlen > 0)
+			snprintf(str, sizeof(str), "%*s",
+					 sdl->sdl_nlen, &sdl->sdl_data[0]);
+		else
+			snprintf(str, sizeof(str), "AF_LINK, index=%d", sdl->sdl_index);
+		return(str);
+	}
+#endif
+	default:
+		snprintf(str, sizeof(str), "sock_ntop_host: unknown AF_xxx: %d, len %d",
+				 sa->sa_family, salen);
+		return(str);
+	}
+    return (NULL);
+}
+
+char *Sock_ntop_host(const struct sockaddr *sa, socklen_t salen)
+{
+	char	*ptr;
+
+	if ( (ptr = sock_ntop_host(sa, salen)) == NULL)
+		err_sys("sock_ntop_host error");	/* inet_ntop() sets errno */
+	return(ptr);
+}
+
+/***************************************************************************************
+ * Functions: sock_set_addr.c
+***************************************************************************************/
+void sock_set_addr(struct sockaddr *sa, socklen_t salen, const void *addr)
+{
+	switch (sa->sa_family) {
+	case AF_INET: {
+		struct sockaddr_in	*sin = (struct sockaddr_in *) sa;
+
+		memcpy(&sin->sin_addr, addr, sizeof(struct in_addr));
+		return;
+	}
+
+#ifdef	IPV6
+	case AF_INET6: {
+		struct sockaddr_in6	*sin6 = (struct sockaddr_in6 *) sa;
+
+		memcpy(&sin6->sin6_addr, addr, sizeof(struct in6_addr));
+		return;
+	}
+#endif
+	}
+
+    return;
+}
+
+/***************************************************************************************
+ * Functions: sock_set_port.c
+***************************************************************************************/
+void sock_set_port(struct sockaddr *sa, socklen_t salen, int port)
+{
+	switch (sa->sa_family) {
+	case AF_INET: {
+		struct sockaddr_in	*sin = (struct sockaddr_in *) sa;
+
+		sin->sin_port = port;
+		return;
+	}
+
+#ifdef	IPV6
+	case AF_INET6: {
+		struct sockaddr_in6	*sin6 = (struct sockaddr_in6 *) sa;
+
+		sin6->sin6_port = port;
+		return;
+	}
+#endif
+	}
+
+	return;
+}
+
+/***************************************************************************************
+ * Functions: sock_set_wild.c
+***************************************************************************************/
+void sock_set_wild(struct sockaddr *sa, socklen_t salen)
+{
+	const void	*wildptr;
+
+	switch (sa->sa_family) {
+	case AF_INET: {
+		static struct in_addr	in4addr_any;
+
+		in4addr_any.s_addr = htonl(INADDR_ANY);
+		wildptr = &in4addr_any;
+		break;
+	}
+
+#ifdef	IPV6
+	case AF_INET6: {
+		wildptr = &in6addr_any;
+		break;
+	}
+#endif
+
+	default:
+		return;
+	}
+	sock_set_addr(sa, salen, wildptr);
+	return;
+}
+
+/***************************************************************************************
+ * Functions: readn.c
+ * Read "n" bytes from a descriptor.
+***************************************************************************************/
+ssize_t readn(int fd, void *vptr, size_t n)
+{
+	size_t	nleft;
+	ssize_t	nread;
+	char	*ptr;
+
+	ptr = vptr;
+	nleft = n;
+	while (nleft > 0) {
+		if ( (nread = read(fd, ptr, nleft)) < 0) {
+			if (errno == EINTR)
+				nread = 0;		/* and call read() again */
+			else
+				return(-1);
+		} else if (nread == 0)
+			break;				/* EOF */
+
+		nleft -= nread;
+		ptr   += nread;
+	}
+	return(n - nleft);		/* return >= 0 */
+}
+
+ssize_t Readn(int fd, void *ptr, size_t nbytes)
+{
+	ssize_t n;
+
+	if ( (n = readn(fd, ptr, nbytes)) < 0)
+		err_sys("readn error");
+	return(n);
+}
+
+/***************************************************************************************
+ * Functions: writen.c
+ * Write "n" bytes to a descriptor.
+***************************************************************************************/
+ssize_t writen(int fd, const void *vptr, size_t n)
+{
+	size_t		nleft;
+	ssize_t		nwritten;
+	const char	*ptr;
+
+	ptr = vptr;
+	nleft = n;
+	while (nleft > 0) {
+		if ( (nwritten = write(fd, ptr, nleft)) <= 0) {
+			if (nwritten < 0 && errno == EINTR)
+				nwritten = 0;		/* and call write() again */
+			else
+				return(-1);			/* error */
+		}
+
+		nleft -= nwritten;
+		ptr   += nwritten;
+	}
+	return(n);
+}
+
+void Writen(int fd, void *ptr, size_t nbytes)
+{
+	if (writen(fd, ptr, nbytes) != nbytes) {
+		err_sys("writen error");
+	}
+}
+
+/***************************************************************************************
+ * Functions: readline.c
+***************************************************************************************/
+static int read_cnt;
+static char *read_ptr;
+static char read_buf[MAXLINE];
+
+ssize_t my_read(int fd, char *ptr)
+{
+	if (read_cnt <= 0) {
+again:
+		if ( (read_cnt = read(fd, read_buf, sizeof(read_buf))) < 0) {
+			if (errno == EINTR)
+				goto again;
+			return(-1);
+		} else if (read_cnt == 0)
+			return(0);
+		read_ptr = read_buf;
+	}
+
+	read_cnt--;
+	*ptr = *read_ptr++;
+	return(1);
+}
+
+ssize_t readline(int fd, void *vptr, size_t maxlen)
+{
+	ssize_t	n, rc;
+	char	c, *ptr;
+
+	ptr = vptr;
+	for (n = 1; n < maxlen; n++) {
+		if ( (rc = my_read(fd, &c)) == 1) {
+			*ptr++ = c;
+			if (c == '\n')
+				break;	/* newline is stored, like fgets() */
+		} else if (rc == 0) {
+			*ptr = 0;
+			return(n - 1);	/* EOF, n - 1 bytes were read */
+		} else
+			return(-1);		/* error, errno set by read() */
+	}
+
+	*ptr = 0;	/* null terminate like fgets() */
+	return(n);
+}
+
+ssize_t readlinebuf(void **vptrptr)
+{
+	if (read_cnt)
+		*vptrptr = read_ptr;
+	return(read_cnt);
+}
+
+ssize_t Readline(int fd, void *ptr, size_t maxlen)
+{
+	ssize_t		n;
+
+	if ( (n = readline(fd, ptr, maxlen)) < 0)
+		err_sys("readline error");
+	return(n);
+}
+
+/***************************************************************************************
+ * Functions: wraplib.c
+ * Wrapper functions for our own library functions.
+ * Most are included in the source file for the function itself.
+***************************************************************************************/
+const char *Inet_ntop(int family, const void *addrptr, char *strptr, size_t len)
+{
+	const char	*ptr;
+
+	if (strptr == NULL)		/* check for old code */
+		err_quit("NULL 3rd argument to inet_ntop");
+	if ( (ptr = inet_ntop(family, addrptr, strptr, len)) == NULL)
+		err_sys("inet_ntop error");		/* sets errno */
+	return(ptr);
+}
+
+void Inet_pton(int family, const char *strptr, void *addrptr)
+{
+	int n;
+
+	if ( (n = inet_pton(family, strptr, addrptr)) < 0)
+		err_sys("inet_pton error for %s", strptr);	/* errno set */
+	else if (n == 0)
+		err_quit("inet_pton error for %s", strptr);	/* errno not set */
+}
