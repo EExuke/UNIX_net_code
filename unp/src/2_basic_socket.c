@@ -45,7 +45,7 @@ int byte_order()
 }
 
 /***************************************************************************************
- * Description   : 
+ * Description   : serv show client ip and port
  ***************************************************************************************/
 int daytime_tcp_srv1()
 {
@@ -77,4 +77,204 @@ int daytime_tcp_srv1()
 		Close(connfd);
 	}
 }
+
+/***************************************************************************************
+ * Description   : tcpserv01
+ ***************************************************************************************/
+int tcp_serv01()
+{
+	int listenfd, connfd;
+	pid_t childpid;
+	socklen_t clilen;
+	struct sockaddr_in servaddr = {0};
+	struct sockaddr_in cliaddr = {0};
+
+	listenfd = Socket(AF_INET, SOCK_STREAM, 0);
+
+	servaddr.sin_family = AF_INET;
+	servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+	servaddr.sin_port = htons(SERV_PORT);
+
+	Bind(listenfd, (SA*)&servaddr, sizeof(servaddr));
+	Listen(listenfd, LISTENQ);
+
+	while (1) {
+		clilen = sizeof(cliaddr);
+		connfd = Accept(listenfd, (SA*)&cliaddr, &clilen);
+		if ((childpid = Fork()) == 0) { /* child process */
+			Close(listenfd);  //close listen socket
+			str_echo(connfd); //process the request
+			exit(0);
+		}
+		Close(connfd);  //parent close connected socket
+	}
+}
+
+/***************************************************************************************
+ * Description   : tcpcli01
+ ***************************************************************************************/
+int tcp_cli01(char *ip_addr)
+{
+	int sockfd;
+	struct sockaddr_in servaddr = {0};
+
+	if (ip_addr == NULL || ip_addr[0] = '\0') {
+		err_quit("input ip_addr is error");
+	}
+
+	sockfd = Socket(AF_INET, SOCK_STREAM, 0);
+
+	servaddr.sin_family = AF_INET;
+	servaddr.sin_port = htonl(SERV_PORT);
+	Inet_ntop(AF_INET, ip_addr, &servaddr.sin_addr);
+
+	Connect(sockfd, (SA*)&servaddr, sizeof(servaddr));
+
+	str_cli(stdin, sockfd); //do it all
+
+	return 0;
+}
+
+/***************************************************************************************
+ * Description   : sigchldwait
+ ***************************************************************************************/
+void sig_chld_wait(int signo)
+{
+	pid_t pid;
+	int stat;
+
+	pid = wait(&stat);
+	printf("child %d terminated\n", pid);
+
+	return;
+}
+
+/***************************************************************************************
+ * Description   : tcpcli04
+ ***************************************************************************************/
+int tcp_cli04(char *ip_addr)
+{
+	int i, sockfd[5];
+	struct sockaddr_in servaddr = {0};
+
+	if (ip_addr == NULL || ip_addr[0] = '\0') {
+		err_quit("input ip_addr is error");
+	}
+
+	for (i=0; i<5; i++) {
+		sockfd[i] = Socket(AF_INET, SOCK_STREAM, 0);
+
+		servaddr.sin_family = AF_INET;
+		servaddr.sin_port = htonl(SERV_PORT);
+		Inet_ntop(AF_INET, ip_addr, &servaddr.sin_addr);
+
+		Connect(sockfd[i], (SA*)&servaddr, sizeof(servaddr));
+	}
+
+	str_cli(stdin, sockfd[0]); //do it all
+
+	return 0;
+}
+
+/***************************************************************************************
+ * Description   : sigchldwaitpid
+ ***************************************************************************************/
+void sig_chld_wait_pid(int signo)
+{
+	pid_t pid;
+	int stat;
+
+	while ((pid = waitpid(-1, &stat, WNOHANG)) > 0) {
+		printf("child %d terminated\n", pid);
+	}
+
+	return;
+}
+
+/***************************************************************************************
+ * Description   : tcpserv04
+ ***************************************************************************************/
+int tcp_serv04()
+{
+	int listenfd, connfd;
+	pid_t childpid;
+	socklen_t clilen;
+	struct sockaddr_in servaddr = {0};
+	struct sockaddr_in cliaddr = {0};
+	void sig_chld_wait_pid(int);
+
+	listenfd = Socket(AF_INET, SOCK_STREAM, 0);
+
+	servaddr.sin_family = AF_INET;
+	servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+	servaddr.sin_port = htons(SERV_PORT);
+
+	Bind(listenfd, (SA*)&servaddr, sizeof(servaddr));
+	Listen(listenfd, LISTENQ);
+	Signal(SIGCHLD, sig_chld_wait_pid);  //must call waitpid()
+
+	while (1) {
+		clilen = sizeof(cliaddr);
+		if ((connfd = accept(listenfd, (SA*)&cliaddr, &clilen)) < 0) {
+			if (errno == EINTR) {
+				continue;
+			} else {
+				err_sys("accept error");
+			}
+		}
+		if ((childpid = Fork()) == 0) { /* child process */
+			Close(listenfd);  //close listen socket
+			str_echo(connfd); //process the request
+			exit(0);
+		}
+		Close(connfd);  //parent close connected socket
+	}
+}
+
+/***************************************************************************************
+ * Description   : str_cli11
+ ***************************************************************************************/
+void str_cli11(FILE *fp, int sockfd)
+{
+	char sendline[MAXLINE] = {0};
+	char recvline[MAXLINE] = {0};
+
+	while (Fgets(sendline, MAXLINE, fp) != NULL) {
+
+		Writen(sockfd, sendline, 1);
+		sleep(1);
+		Writen(sockfd, sendline+1, strlen(sendline)-1);
+
+		if (Readline(sockfd, recvline, MAXLINE) == 0) {
+			err_quit("str_cli: server terminated prematurely");
+		}
+
+		Fputs(recvline, stdout);
+	}
+}
+
+/***************************************************************************************
+ * Description   : str_echo08
+ ***************************************************************************************/
+void str_echo(int sockfd)
+{
+	long arg1, arg2;
+	ssize_t n;
+	char line[MAXLINE] = {0};
+
+	while (1) {
+		if ((n = Readline(sockfd, line, MAXLINE)) == 0)
+			return;		/* connection closed by other end */
+
+		if (sscanf(line, "%ld%ld", &arg1, &arg2) == 2) {
+			snprintf(line, sizeof(line), "%ld\n", arg1 + arg2);
+		} else {
+			snprintf(line, sizeof(line), "input error\n");
+		}
+
+		n = strlen(line);
+		Writen(sockfd, line, n);
+	}
+}
+
 

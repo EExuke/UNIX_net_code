@@ -1251,3 +1251,75 @@ void Inet_pton(int family, const char *strptr, void *addrptr)
 	else if (n == 0)
 		err_quit("inet_pton error for %s", strptr);	/* errno not set */
 }
+
+/***************************************************************************************
+ * Functions: str_echo.c
+***************************************************************************************/
+void str_echo(int sockfd)
+{
+	ssize_t n;
+	char buf[MAXLINE];
+
+again:
+	while ( (n = read(sockfd, buf, MAXLINE)) > 0) {
+		Writen(sockfd, buf, n);
+	}
+
+	if (n < 0 && errno == EINTR) {
+		goto again;
+	} else if (n < 0) {
+		err_sys("str_echo: read error");
+	}
+}
+
+/***************************************************************************************
+ * Functions: str_cli.c
+***************************************************************************************/
+void str_cli(FILE *fp, int sockfd)
+{
+	char sendline[MAXLINE], recvline[MAXLINE];
+
+	while (Fgets(sendline, MAXLINE, fp) != NULL) {
+		Writen(sockfd, sendline, strlen(sendline));
+
+		if (Readline(sockfd, recvline, MAXLINE) == 0) {
+			err_quit("str_cli: server terminated prematurely");
+		}
+
+		Fputs(recvline, stdout);
+	}
+}
+
+/***************************************************************************************
+ * Functions: signal.c
+***************************************************************************************/
+Sigfunc *signal(int signo, Sigfunc *func)
+{
+	struct sigaction	act, oact;
+
+	act.sa_handler = func;
+	sigemptyset(&act.sa_mask);
+	act.sa_flags = 0;
+	if (signo == SIGALRM) {
+#ifdef	SA_INTERRUPT
+		act.sa_flags |= SA_INTERRUPT;	/* SunOS 4.x */
+#endif
+	} else {
+#ifdef	SA_RESTART
+		act.sa_flags |= SA_RESTART;		/* SVR4, 44BSD */
+#endif
+	}
+	if (sigaction(signo, &act, &oact) < 0)
+		return(SIG_ERR);
+	return(oact.sa_handler);
+}
+
+Sigfunc *Signal(int signo, Sigfunc *func)	/* for our signal() function */
+{
+	Sigfunc	*sigfunc;
+
+	if ( (sigfunc = signal(signo, func)) == SIG_ERR)
+		err_sys("signal error");
+	return(sigfunc);
+}
+
