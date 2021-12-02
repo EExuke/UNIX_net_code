@@ -18,15 +18,8 @@
 #### 5
 - TCP回射服务器程序 tcpserv01
 - TCP回射客户程序   tcpcli01
-- 调用wait的SIGCHLD信号处理函数 sigchldwait
 - 与服务器建立了5个链接的TCP客户程序 tcpcli04
-- 调用waitpid函数的sig_chld函数最终版本 sigchldwaitpid
 - 处理accept返回EINTR错误的TCP服务器程序最终版本 tcpserv04
-- 调用writen两次的str_cli函数 str_cli11
-- 对两个数求和的str_echo函数 str_echo08
-- 头文件sum.h
-- 发送两个二进制整数给服务器的str_cli函数 str_cli09
-- 对两个二进制整数求和的str_echo函数 str_echo09
 #### 6
 -
 

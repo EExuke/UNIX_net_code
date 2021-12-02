@@ -4,10 +4,12 @@
 
 DIR_OBJ = .
 DIR_SRC = .
-INC_SRC = .
+INC_SRC += ../unp/inc
 
 SRC = $(wildcard ${DIR_SRC}/*.c)
 OBJ = $(patsubst %.c, ${DIR_OBJ}/%.o, $(notdir $(SRC)))
+
+LIBS += -lpthread
 
 BIN_TARGET = test_cli
 
@@ -15,7 +17,7 @@ CC = gcc
 CFLAGS = -g -Wall -I $(INC_SRC)
 ${BIN_TARGET}: ${OBJ}
 	$(warning Building $(BIN_TARGET) ...)
-	@$(CC) $(OBJ) -o $@
+	@$(CC) $(OBJ) -o $@ ${LIBS}
 
 ${DIR_OBJ}/%.o: ${DIR_SRC}/%.c
 	$(warning Comping $< ...)
@@ -25,6 +27,6 @@ ${DIR_OBJ}/%.o: ${DIR_SRC}/%.c
 .PHONY: clean
 
 clean:
-	@find ${DIR_OBJ} -name *.o -exec rm -rf {} \;
+	@rm ${DIR_OBJ}/*.o;
 	@rm -rf $(BIN_TARGET)
 

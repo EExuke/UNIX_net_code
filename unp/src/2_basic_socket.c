@@ -61,7 +61,7 @@ int daytime_tcp_srv1()
 
 	servaddr.sin_family = AF_INET;
 	servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-	servaddr.sin_port = htons(9970);  //my daytime server port
+	servaddr.sin_port = htons(SERV_PORT);  //my daytime server port
 
 	Bind(listenfd, (SA*)&servaddr, sizeof(servaddr));
 	Listen(listenfd, LISTENQ);
@@ -126,7 +126,7 @@ int tcp_cli01(char *ip_addr)
 	sockfd = Socket(AF_INET, SOCK_STREAM, 0);
 
 	servaddr.sin_family = AF_INET;
-	servaddr.sin_port = htonl(SERV_PORT);
+	servaddr.sin_port = htons(SERV_PORT);
 	Inet_pton(AF_INET, ip_addr, &servaddr.sin_addr);
 
 	Connect(sockfd, (SA*)&servaddr, sizeof(servaddr));
@@ -166,7 +166,7 @@ int tcp_cli04(char *ip_addr)
 		sockfd[i] = Socket(AF_INET, SOCK_STREAM, 0);
 
 		servaddr.sin_family = AF_INET;
-		servaddr.sin_port = htonl(SERV_PORT);
+		servaddr.sin_port = htons(SERV_PORT);
 		Inet_pton(AF_INET, ip_addr, &servaddr.sin_addr);
 
 		Connect(sockfd[i], (SA*)&servaddr, sizeof(servaddr));

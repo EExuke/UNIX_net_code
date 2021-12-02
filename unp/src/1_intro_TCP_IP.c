@@ -113,7 +113,7 @@ int daytime_tcp_srv()
 
 	servaddr.sin_family = AF_INET;
 	servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-	servaddr.sin_port = htons(9970);  //my daytime server port
+	servaddr.sin_port = htons(SERV_PORT);  //my daytime server port
 
 	Bind(listenfd, (SA*)&servaddr, sizeof(servaddr));
 	Listen(listenfd, LISTENQ);

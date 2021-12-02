@@ -46,6 +46,12 @@ int main(int argc, const char *argv[])
 	/*my_debug_msg("| test 2-2: daytime_tcp_srv1 ==>");*/
 	/*daytime_tcp_srv1();  //have loop*/
 
+	/*my_debug_msg("| test 2-3: tcp_serv01 ==>");*/
+	/*tcp_serv01();  //have loop*/
+
+	/*my_debug_msg("| test 2-4: tcp_serv04 ==>");*/
+	/*tcp_serv04();  //have loop*/
+
 	return 0;
 }
 

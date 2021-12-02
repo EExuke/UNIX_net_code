@@ -15,22 +15,12 @@
  *     FILE DESCRIPTION       :
 ** ************************************************************************** */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <limits.h>
-#include <unistd.h>
-#include <strings.h>
-#include <stdbool.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <sys/un.h>
-#include <arpa/inet.h>
-#include <arpa/inet.h>
-#include <sys/types.h>
+#include "/home/xuke/bin/dbg.h"
+#include "unp.h"
+#include "1_intro_TCP_IP.h"
+#include "2_basic_socket.h"
 
-#define MAXLINE    4096
-
-int daytime_tcp_cli(const char *ip_addr, int port)
+int my_daytime_tcp_cli(const char *ip_addr, int port)
 {
 	int sockfd, n;
 	char recvline[MAXLINE+1] = {0};
@@ -63,21 +53,22 @@ int daytime_tcp_cli(const char *ip_addr, int port)
 	if (n < 0) {
 		perror("read error");
 	}
-
 	return 0;
 }
 
 /****************************************************************************
- *  Function Name : main
- *  Description   : The Main Function.
- *  Input(s)      : argc - The numbers of input value.
- *                : argv - The pointer to input specific parameters.
- *  Output(s)     : NULL
- *  Returns       : 0
+ *  Function Name : main test client
  ****************************************************************************/
 int main(int argc, const char *argv[])
 {
-	daytime_tcp_cli("127.0.0.1", 9970);
+	/*my_debug_msg("my_daytime_tcp_cli");*/
+	/*my_daytime_tcp_cli("127.0.0.1", SERV_PORT);*/
+
+	/*my_debug_msg("tcp_cli01");*/
+	/*tcp_cli01("127.0.0.1");*/
+
+	my_debug_msg("tcp_cli04");
+	tcp_cli04("127.0.0.1");
     return 0;
 }
 
