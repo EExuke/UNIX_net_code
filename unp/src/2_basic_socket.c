@@ -759,6 +759,96 @@ void dg_ehco(int sockfd, SA *pcliaddr, socklen_t clilen)
 	}
 }
 
+void dg_cli(FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen)
+{
+	int n;
+	char sendline[MAXLINE];
+	char recvline[MAXLINE+1];
+	socklen_t len;
+	struct sockaddr *preply_addr;
+
+	preply_addr = Malloc(servlen);
+	while (Fgets(sendline, MAXLINE, fp) != NULL) {
+		Sendto(sockfd, sendline, strlen(sendline), 0, pservaddr, servlen);
+		len = servlen;
+		n = Recvfrom(sockfd, recvline, MAXLINE, 0, preply_addr, &len);
+		if (len != servlen || memcmp(pservaddr, preply_addr, len) != 0) {
+			printf("reply from %s (ignored)\n", Sock_ntop(preply_addr, len));
+			continue;
+		}
+		recvline[n] = 0;    //null terminate
+		Fgets(recvline, MAXLINE, stdout);
+	}
+}
+
+void dg_cli_connect(FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen)
+{
+	int n;
+	char sendline[MAXLINE];
+	char recvline[MAXLINE+1];
+
+	Connect(sockfd, (SA*)pservaddr, servlen);
+
+	while (Fgets(sendline, MAXLINE, fp) != NULL) {
+		Write(sockfd, sendline, strlen(sendline));
+
+		n = Read(sockfd, recvline, MAXLINE);
+		recvline[n] = 0;    //null terminate
+		Fgets(recvline, MAXLINE, stdout);
+	}
+}
+
+#define NDG      2000    //datagrams to send
+#define DGLEN    1400    //length of echo datagrams
+void dg_cli_loop1(FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen)
+{
+	int i;
+	char sendline[DGLEN];
+
+	for (i=0; i<NDG; i++) {
+		Sendto(sockfd, sendline, DGLEN, 0, pservaddr, servlen);
+	}
+}
+
+static int count;
+
+static void recvfrom_int(int signo)
+{
+	printf("\nreceived %d datagrams\n", count);
+	return;
+}
+
+void dg_echo_loop1(int sockfd, SA *pcliaddr, socklen_t clilen)
+{
+	socklen_t len;
+	char mesg[MAXLINE] = {0};
+
+	Signal(SIGINT, recvfrom_int);
+
+	while (1) {
+		len = clilen;
+		Recvfrom(sockfd, mesg, MAXLINE, 0, pcliaddr, &len);
+		count++;
+	}
+}
+
+void dg_echo_loop2(int sockfd, SA *pcliaddr, socklen_t clilen)
+{
+	int n = (220 * 1024);
+	socklen_t len;
+	char mesg[MAXLINE] = {0};
+
+	Signal(SIGINT, recvfrom_int);
+
+	Setsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, &n, sizeof(n));
+
+	while (1) {
+		len = clilen;
+		Recvfrom(sockfd, mesg, MAXLINE, 0, pcliaddr, &len);
+		count++;
+	}
+}
+
 /***************************************************************************************
  * Description   : udpserv01
  ***************************************************************************************/
@@ -783,12 +873,123 @@ int udp_serv01()
 /***************************************************************************************
  * Description   : udpcli01
  ***************************************************************************************/
+int udp_cli01(char *ip_addr)
+{
+	int sockfd;
+	struct sockaddr_in servaddr = {0};
+
+	if (ip_addr == NULL || ip_addr[0] == '\0') {
+		err_quit("input ip_addr error");
+	}
+
+	servaddr.sin_family = AF_INET;
+	servaddr.sin_port = htons(SERV_PORT);
+	Inet_pton(AF_INET, ip_addr, &servaddr.sin_addr);
+
+	sockfd = Socket(AF_INET, SOCK_DGRAM, 0);
+
+	dg_cli(stdin, sockfd, (SA*)&servaddr, sizeof(servaddr));
+	return 0;
+}
 
 /***************************************************************************************
  * Description   : udpcli09
  ***************************************************************************************/
+int udp_cli09(char *ip_addr)
+{
+	int sockfd;
+	socklen_t len;
+	struct sockaddr_in cliaddr = {0};
+	struct sockaddr_in servaddr = {0};
+
+	if (ip_addr == NULL || ip_addr[0] == '\0') {
+		err_quit("input ip_addr error");
+	}
+
+	sockfd = Socket(AF_INET, SOCK_DGRAM, 0);
+
+	servaddr.sin_family = AF_INET;
+	servaddr.sin_port = htons(SERV_PORT);
+	Inet_pton(AF_INET, ip_addr, &servaddr.sin_addr);
+
+	Connect(sockfd, (SA*)&servaddr, sizeof(servaddr));
+
+	len = sizeof(cliaddr);
+	Getsockname(sockfd, (SA*)&cliaddr, &len);
+	printf("local address %s\n", Sock_ntop((SA*)&cliaddr, len));
+
+	return 0;
+}
 
 /***************************************************************************************
  * Description   : udpservselect01
  ***************************************************************************************/
+int udp_serv_select01()
+{
+	int listenfd, connfd, udpfd, nready, maxfdp1;
+	char mesg[MAXLINE];
+	pid_t childpid;
+	fd_set rset;
+	ssize_t n;
+	socklen_t len;
+	const int on = 1;
+	struct sockaddr_in cliaddr = {0};
+	struct sockaddr_in servaddr = {0};
+
+	/* create listening TCP socket */
+	listenfd = Socket(AF_INET, SOCK_STREAM, 0);
+
+	servaddr.sin_family      = AF_INET;
+	servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+	servaddr.sin_port        = htons(SERV_PORT);
+
+	Setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
+	Bind(listenfd, (SA *) &servaddr, sizeof(servaddr));
+
+	Listen(listenfd, LISTENQ);
+
+	/* create UDP socket */
+	udpfd = Socket(AF_INET, SOCK_DGRAM, 0);
+
+	bzero(&servaddr, sizeof(servaddr));
+	servaddr.sin_family      = AF_INET;
+	servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+	servaddr.sin_port        = htons(SERV_PORT);
+
+	Bind(udpfd, (SA *) &servaddr, sizeof(servaddr));
+
+	Signal(SIGCHLD, sig_chld_wait_pid);    /* must call waitpid() */
+
+	FD_ZERO(&rset);
+	maxfdp1 = max(listenfd, udpfd) + 1;
+	while (1) {
+		FD_SET(listenfd, &rset);
+		FD_SET(udpfd, &rset);
+		if ( (nready = select(maxfdp1, &rset, NULL, NULL, NULL)) < 0) {
+			if (errno == EINTR) {
+				continue;    /* back to while() */
+			} else {
+				err_sys("select error");
+			}
+		}
+
+		if (FD_ISSET(listenfd, &rset)) {
+			len = sizeof(cliaddr);
+			connfd = Accept(listenfd, (SA *) &cliaddr, &len);
+	
+			if ( (childpid = Fork()) == 0) {	/* child process */
+				Close(listenfd);	/* close listening socket */
+				str_echo(connfd);	/* process the request */
+				exit(0);
+			}
+			Close(connfd);			/* parent closes connected socket */
+		}
+
+		if (FD_ISSET(udpfd, &rset)) {
+			len = sizeof(cliaddr);
+			n = Recvfrom(udpfd, mesg, MAXLINE, 0, (SA *) &cliaddr, &len);
+			Sendto(udpfd, mesg, n, 0, (SA *) &cliaddr, len);
+		}
+	}
+}
 

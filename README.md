@@ -27,16 +27,9 @@
 - 套接字选项检查程序 checkopts
 #### 8 基本UDP套接字编程
 - UDP回射服务器程序 udpserv01
-- dg_echo
 - UDP回射客户程序 udpcli01
-- dg_cli
-- dgcliaddr
-- dgcliconnect
-- dgcliloop1
-- dgecholoop1
-- dgecholoop2
-- udpcli09
-- udpservselect01
+- 使用connect来确定输出接口的UDP程序 udpcli09
+- 使用select处理TCP和UDP的回射服务器程序 udpservselect01
 #### 10 SCTP客户/服务器程序例子
 - SCTP流分回射服务器程序 sctpserv01
 - SCTP流分回射客户程序 sctpclient01
