@@ -742,3 +742,53 @@ int checkopts()
 	return 0;
 }
 
+/***************************************************************************************
+ * Description   : misc functions of chapter 8
+ ***************************************************************************************/
+void dg_ehco(int sockfd, SA *pcliaddr, socklen_t clilen)
+{
+	int n;
+	socklen_t len;
+	char mesg[MAXLINE];
+
+	while (1) {
+		len = clilen;
+		n = Recvfrom(sockfd, mesg, MAXLINE, 0, pcliaddr, &len);
+
+		Sendto(sockfd, mesg, n, 0, pcliaddr, len);
+	}
+}
+
+/***************************************************************************************
+ * Description   : udpserv01
+ ***************************************************************************************/
+int udp_serv01()
+{
+	int sockfd;
+	struct sockaddr_in servaddr = {0};
+	struct sockaddr_in cliaddr = {0};
+
+	sockfd = Socket(AF_INET, SOCK_DGRAM, 0);
+
+	servaddr.sin_family = AF_INET;
+	servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+	servaddr.sin_port = htons(SERV_PORT);
+
+	Bind(sockfd, (SA*)&servaddr, sizeof(servaddr));
+
+	dg_ehco(sockfd, (SA*)&cliaddr, sizeof(cliaddr));
+	return 0;
+}
+
+/***************************************************************************************
+ * Description   : udpcli01
+ ***************************************************************************************/
+
+/***************************************************************************************
+ * Description   : udpcli09
+ ***************************************************************************************/
+
+/***************************************************************************************
+ * Description   : udpservselect01
+ ***************************************************************************************/
+

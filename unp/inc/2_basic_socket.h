@@ -35,6 +35,8 @@ int tcp_serv_select01();
 int tcp_serv_poll01();
 
 int checkopts();
+
+int udp_serv01();
 /*------------------End of API Definition--------------------*/
 
 #endif /* End of _2_BASIC_SOCKET_H_ */
