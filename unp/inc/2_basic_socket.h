@@ -22,11 +22,19 @@
 
 /*------------------API Definition---------------------------*/
 int byte_order();
+
 int daytime_tcp_srv1();
+
 int tcp_serv01();
 int tcp_cli01(char *ip_addr);
 int tcp_serv04();
 int tcp_cli04(char *ip_addr);
+
+void str_cli_select02(FILE *fp, int sockfd);
+int tcp_serv_select01();
+int tcp_serv_poll01();
+
+int checkopts();
 /*------------------End of API Definition--------------------*/
 
 #endif /* End of _2_BASIC_SOCKET_H_ */

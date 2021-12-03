@@ -21,8 +21,6 @@
 - 与服务器建立了5个链接的TCP客户程序 tcpcli04
 - 处理accept返回EINTR错误的TCP服务器程序最终版本 tcpserv04
 #### 6 select和poll函数
-- strcliselect01
-- strcliselect02
 - 使用单进程和select的TCP服务器程序 tcpservselect01
 - 使用poll函数的TCP服务器程序 tcpservpoll01
 #### 7 套接字选项
