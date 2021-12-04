@@ -67,8 +67,12 @@ int main(int argc, const char *argv[])
 	/*my_debug_msg("tcp_cli01");*/
 	/*tcp_cli01("127.0.0.1");*/
 
-	my_debug_msg("tcp_cli04");
-	tcp_cli04("127.0.0.1");
+	/*my_debug_msg("tcp_cli04");*/
+	/*tcp_cli04("127.0.0.1");*/
+
+	my_debug_msg("udp_cli01");
+	udp_cli01("127.0.0.1");
+
     return 0;
 }
 

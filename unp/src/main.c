@@ -52,8 +52,12 @@ int main(int argc, const char *argv[])
 	/*tcp_serv_poll01();*/
 	my_debug_msg("| test 2-7: checkopts ==>");
 	checkopts();
-	my_debug_msg("| test 2-8: udp_serv01 ==>");
-	udp_serv01();
+	/*my_debug_msg("| test 2-8: udp_serv01 ==>");*/
+	/*udp_serv01();*/
+	my_debug_msg("udp_cli09");
+	udp_cli09("127.0.0.1");
+	my_debug_msg("| test 2-9: udp_serv_select01 ==>");
+	udp_serv_select01();
 
 	return 0;
 }

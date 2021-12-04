@@ -777,7 +777,7 @@ void dg_cli(FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen)
 			continue;
 		}
 		recvline[n] = 0;    //null terminate
-		Fgets(recvline, MAXLINE, stdout);
+		Fputs(recvline, stdout);
 	}
 }
 
@@ -794,7 +794,7 @@ void dg_cli_connect(FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen
 
 		n = Read(sockfd, recvline, MAXLINE);
 		recvline[n] = 0;    //null terminate
-		Fgets(recvline, MAXLINE, stdout);
+		Fputs(recvline, stdout);
 	}
 }
 
