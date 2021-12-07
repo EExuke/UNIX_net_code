@@ -42,6 +42,7 @@ int main(int argc, const char *argv[])
 	byte_order();
 	/*my_debug_msg("| test 2-2: daytime_tcp_srv1 ==>");*/
 	/*daytime_tcp_srv1();  //have loop*/
+
 	/*my_debug_msg("| test 2-3: tcp_serv01 ==>");*/
 	/*tcp_serv01();  //have loop*/
 	/*my_debug_msg("| test 2-4: tcp_serv04 ==>");*/
@@ -50,8 +51,10 @@ int main(int argc, const char *argv[])
 	/*tcp_serv_select01();  //have loop*/
 	/*my_debug_msg("| test 2-6: tcp_serv_poll01 ==>");*/
 	/*tcp_serv_poll01();*/
+
 	my_debug_msg("| test 2-7: checkopts ==>");
 	checkopts();
+
 	/*my_debug_msg("| test 2-8: udp_serv01 ==>");*/
 	/*udp_serv01();*/
 	my_debug_msg("udp_cli09");
