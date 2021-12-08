@@ -33,12 +33,9 @@
 #### 10 SCTP客户/服务器程序例子
 - SCTP流分回射服务器程序 sctpserv01
 - SCTP流分回射客户程序 sctpclient01
-- sctp_strcli
-- sctp_strcliecho
-- sctp_strcliecho2
-- 服务器程序返回更多流 sctpserv02
-- 服务器程序应答同时终止关联 sctpserv03
-- 客户程序预先中止关联 sctpclient02
+- 服务器程序返回更多流 sctpserv02 (略)
+- 服务器程序应答同时终止关联 sctpserv03 (略)
+- 客户程序预先中止关联 sctpclient02 (略)
 #### 11 名字与地址转换
 - 调用gethostbyname并显示返回的信息 hostent
 - 使用gethostbyname和getservbyname的时间获取客户程序 daytimetcpcli1

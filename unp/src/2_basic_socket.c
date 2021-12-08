@@ -993,3 +993,174 @@ int udp_serv_select01()
 	}
 }
 
+#ifdef HAVE_NETINET_SCTP_H
+/***************************************************************************************
+ * Description   : sctp misc function
+ ***************************************************************************************/
+#define SCTP_MAXLINE    800
+
+void sctpstr_cli(FILE *fp, int sock_fd, struct sockaddr *to, socklen_t tolen)
+{
+	struct sockaddr_in peeraddr;
+	struct sctp_sndrcvinfo sri;
+	socklen_t len;
+	char sendline[MAXLINE], recvline[MAXLINE];
+	int out_sz, rd_sz;
+	int msg_flags;
+
+	bzero(&sri, sizeof(sri));
+	while (fgets(sendline, sizeof(sendline), fp) != NULL) {
+		if (sendline[0] != '[') {
+			printf("Error, line must be of the form '[streamnum]text'\n");
+			continue;
+		}
+
+		sri.sinfo_stream = strtol(&sendline[1], NULL, 0);
+		out_sz = strlen(sendline);
+		Sctp_sendmsg(sock_fd, sendline, out_sz, to, tolen, 0, 0, sri.sinfo_stream, 0, 0);
+
+		len = sizeof(peeraddr);
+		rd_sz = Sctp_recvmsg(sock_fd, recvline, sizeof(recvline), (SA*)&peeraddr, &len, &sri, &msg_flags);
+		printf("From str:%d (assoc:0x%x):", sri.sinfo_stream, sri.sinfo_ssn, (u_int)sri.sinfo_assoc_id);
+		printf("%.*s", rd_sz, recvline);
+	}
+}
+
+void sctpstr_cli_echoall(FILE *fp, int sock_fd, struct sockaddr *to, socklen_t tolen)
+{
+	struct sockaddr_in peeraddr;
+	struct sctp_sndrcvinfo sri;
+	char sendline[SCTP_MAXLINE], recvline[SCTP_MAXLINE];
+	socklen_t len;
+	int rd_sz,i,strsz;
+	int msg_flags;
+
+	bzero(sendline,sizeof(sendline));
+	bzero(&sri,sizeof(sri));
+	while (fgets(sendline, SCTP_MAXLINE - 9, fp) != NULL) {
+		strsz = strlen(sendline);
+		if(sendline[strsz-1] == '\n') {
+			sendline[strsz-1] = '\0';
+			strsz--;
+		}
+/* include modified_echo */
+		for(i=0;i<SERV_MAX_SCTP_STRM;i++) {
+			snprintf(sendline + strsz, sizeof(sendline) - strsz,
+				".msg.%d 1", i);
+			Sctp_sendmsg(sock_fd, sendline, sizeof(sendline), 
+				     to, tolen, 
+				     0, 0,
+				     i,
+				     0, 0);
+			snprintf(sendline + strsz, sizeof(sendline) - strsz,
+				".msg.%d 2", i);
+			Sctp_sendmsg(sock_fd, sendline, sizeof(sendline), 
+				     to, tolen, 
+				     0, 0,
+				     i,
+				     0, 0);
+		}
+		for(i=0;i<SERV_MAX_SCTP_STRM*2;i++) {
+			len = sizeof(peeraddr);
+/* end modified_echo */
+			rd_sz = Sctp_recvmsg(sock_fd, recvline, sizeof(recvline),
+				     (SA *)&peeraddr, &len,
+				     &sri,&msg_flags);
+			printf("From str:%d seq:%d (assoc:0x%x):",
+				sri.sinfo_stream,sri.sinfo_ssn,
+				(u_int)sri.sinfo_assoc_id);
+			printf("%.*s\n",rd_sz,recvline);
+		}
+	}
+}
+
+/***************************************************************************************
+ * Description   : sctpserv01
+ ***************************************************************************************/
+int sctp_serv01(int increment)
+{
+	int sock_fd;
+	int msg_flags;
+	int stream_increment = 1;
+	char readbuf[BUFFSIZE];
+	struct sockaddr_in servaddr;
+	struct sockaddr_in cliaddr;
+	struct sctp_sndrcvinfo sri;
+	struct sctp_event_subscribe evnts;
+	socklen_t len;
+	size_t rd_sz;
+
+	if (increment) {
+		stream_increment = increment;
+	}
+	sock_fd = Socket(AF_INET, SOCK_SEQPACKET, IPPROTO_SCTP);
+	bzero(&servaddr, sizeof(servaddr));
+	servaddr.sin_family = AF_INET;
+	servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+	servaddr.port = htons(SERV_PORT);
+
+	Bind(sock_fd, (SA*)&servaddr, sizeof(servaddr));
+
+	bzero(&evnts, sizeof(evnts));
+	evnts.sctp_data_io_event = 1;
+	Setsockopt(sock_fd, IPPROTO_SCTP, SCTP_EVENTS, &evnts, sizeof(evnts));
+
+	Listen(sock_fd, LISTENQ);
+	while (1) {
+		len = sizeof(struct sockaddr_in);
+		rd_sz = Sctp_recvmsg(sock_fd, readbuf, sizeof(readbuf), (SA*)&cliaddr, &len, &sri, &msg_flags);
+
+		if (stream_increment) {
+			sri.sinfo_stream++;
+			if (sri.sinfo_stream >= sctp_get_no_strms(sock_fd, (SA*)&cliaddr, len)) {
+				sri.sinfo_stream = 0;
+			}
+		}
+		Sctp_sendmsg(sock_fd, readbuf, rd_sz, (SA*)&cliaddr, len, sri.sinfo_ppid, sri.sinfo_flags, sri.sinfo_stream, 0, 0);
+	}
+}
+
+/***************************************************************************************
+ * Description   : sctpserv01
+ ***************************************************************************************/
+int sctp_client01(char *ip_addr, int echo_2_all)
+{
+	int sock_fd;
+	int echo_to_all = 0;
+	struct sockaddr_in servaddr;
+	struct sctp_event_subscribe evnts;
+
+	if (ip_addr == NULL || ip_addr[0] == '\0') {
+		err_quit("Missing host argument");
+	}
+	if (echo_2_all) {
+		printf("Echoing messages to all streams\n");
+		echo_to_all = echo_2_all;
+	}
+	//set servaddr
+	sock_fd = Socket(AF_INET, SOCK_SEQPACKET, IPPROTO_SCTP);
+	bzero(&servaddr, sizeof(servaddr));
+	servaddr.sin_family = AF_INET;
+	servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+	servaddr.sin_port = htons(SERV_PORT);
+	Inet_pton(AF_INET, ip_addr, &servaddr.sin_addr);
+	//set evnts
+	bzero(&evnts, sizeof(evnts));
+	evnts.sctp_data_io_event = 1;
+	Setsockopt(sock_fd, IPPROTO_SCTP, SCTP_EVENTS, &evnts, sizeof(evnts));
+
+	if (echo_to_all == 0) {
+		sctpstr_cli(stdin, sock_fd, (SA*)&servaddr, sizeof(servaddr));
+	} else {
+		sctpstr_cli_echoall(stdin, sock_fd, (SA*)&servaddr, sizeof(servaddr));
+	}
+
+	Close(sock_fd);
+	return 0;
+}
+#endif /*HAVE_NETINET_SCTP_H */
+
+/***************************************************************************************
+ * Description   : hostent - call gethostbyname
+ ***************************************************************************************/
+
