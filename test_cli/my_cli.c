@@ -70,8 +70,11 @@ int main(int argc, const char *argv[])
 	/*my_debug_msg("tcp_cli04");*/
 	/*tcp_cli04("127.0.0.1");*/
 
-	my_debug_msg("udp_cli01");
-	udp_cli01("127.0.0.1");
+	/*my_debug_msg("udp_cli01");*/
+	/*udp_cli01("127.0.0.1");*/
+
+	my_debug_msg("get 9999 from localhost");
+	daytimetcpcli("localhost", "9999");
 
     return 0;
 }

@@ -40,6 +40,12 @@ int udp_serv01();
 int udp_cli01(char *ip_addr);
 int udp_cli09(char *ip_addr);
 int udp_serv_select01();
+
+int hostent(char *host);
+int daytimetcpcli1(char *hostname, char *servname);
+int daytimetcpcli(char *hostname, char *servname);
+int daytimetcpsrv1(char *servname);
+int daytimetcpsrv2(char *hostname, char *servname);
 /*------------------End of API Definition--------------------*/
 
 #endif /* End of _2_BASIC_SOCKET_H_ */

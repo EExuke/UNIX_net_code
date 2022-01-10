@@ -1369,3 +1369,136 @@ void Fputs(const char *ptr, FILE *stream)
 		err_sys("fputs error");
 }
 
+struct addrinfo *host_serv(const char *host, const char *serv, int family, int socktype)
+{
+	int				n;
+	struct addrinfo	hints, *res;
+
+	bzero(&hints, sizeof(struct addrinfo));
+	hints.ai_flags = AI_CANONNAME;	/* always return canonical name */
+	hints.ai_family = family;		/* AF_UNSPEC, AF_INET, AF_INET6, etc. */
+	hints.ai_socktype = socktype;	/* 0, SOCK_STREAM, SOCK_DGRAM, etc. */
+
+	if ( (n = getaddrinfo(host, serv, &hints, &res)) != 0)
+		return(NULL);
+
+	return(res);	/* return pointer to first on linked list */
+}
+/* end host_serv */
+
+/*
+ * There is no easy way to pass back the integer return code from
+ * getaddrinfo() in the function above, short of adding another argument
+ * that is a pointer, so the easiest way to provide the wrapper function
+ * is just to duplicate the simple function as we do here.
+ */
+
+struct addrinfo *Host_serv(const char *host, const char *serv, int family, int socktype)
+{
+	int				n;
+	struct addrinfo	hints, *res;
+
+	bzero(&hints, sizeof(struct addrinfo));
+	hints.ai_flags = AI_CANONNAME;	/* always return canonical name */
+	hints.ai_family = family;		/* 0, AF_INET, AF_INET6, etc. */
+	hints.ai_socktype = socktype;	/* 0, SOCK_STREAM, SOCK_DGRAM, etc. */
+
+	if ( (n = getaddrinfo(host, serv, &hints, &res)) != 0)
+		err_quit("host_serv error for %s, %s: %s",
+				 (host == NULL) ? "(no hostname)" : host,
+				 (serv == NULL) ? "(no service name)" : serv,
+				 gai_strerror(n));
+
+	return(res);	/* return pointer to first on linked list */
+}
+
+int tcp_connect(const char *host, const char *serv)
+{
+	int				sockfd, n;
+	struct addrinfo	hints, *res, *ressave;
+
+	bzero(&hints, sizeof(struct addrinfo));
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+
+	if ( (n = getaddrinfo(host, serv, &hints, &res)) != 0)
+		err_quit("tcp_connect error for %s, %s: %s",
+				 host, serv, gai_strerror(n));
+	ressave = res;
+
+	do {
+		sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+		if (sockfd < 0)
+			continue;	/* ignore this one */
+
+		if (connect(sockfd, res->ai_addr, res->ai_addrlen) == 0)
+			break;		/* success */
+
+		Close(sockfd);	/* ignore this one */
+	} while ( (res = res->ai_next) != NULL);
+
+	if (res == NULL)	/* errno set from final connect() */
+		err_sys("tcp_connect error for %s, %s", host, serv);
+
+	freeaddrinfo(ressave);
+
+	return(sockfd);
+}
+
+int Tcp_connect(const char *host, const char *serv)
+{
+	return(tcp_connect(host, serv));
+}
+
+int tcp_listen(const char *host, const char *serv, socklen_t *addrlenp)
+{
+	int				listenfd, n;
+	const int		on = 1;
+	struct addrinfo	hints, *res, *ressave;
+
+	bzero(&hints, sizeof(struct addrinfo));
+	hints.ai_flags = AI_PASSIVE;
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+
+	if ( (n = getaddrinfo(host, serv, &hints, &res)) != 0)
+		err_quit("tcp_listen error for %s, %s: %s",
+				 host, serv, gai_strerror(n));
+	ressave = res;
+
+	do {
+		listenfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+		if (listenfd < 0)
+			continue;		/* error, try next one */
+
+		Setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
+		if (bind(listenfd, res->ai_addr, res->ai_addrlen) == 0)
+			break;			/* success */
+
+		Close(listenfd);	/* bind error, close and try next one */
+	} while ( (res = res->ai_next) != NULL);
+
+	if (res == NULL)	/* errno from final socket() or bind() */
+		err_sys("tcp_listen error for %s, %s", host, serv);
+
+	Listen(listenfd, LISTENQ);
+
+	if (addrlenp)
+		*addrlenp = res->ai_addrlen;	/* return size of protocol address */
+
+	freeaddrinfo(ressave);
+
+	return(listenfd);
+}
+/* end tcp_listen */
+
+/*
+ * We place the wrapper function here, not in wraplib.c, because some
+ * XTI programs need to include wraplib.c, and it also defines
+ * a Tcp_listen() function.
+ */
+
+int Tcp_listen(const char *host, const char *serv, socklen_t *addrlenp)
+{
+	return(tcp_listen(host, serv, addrlenp));
+}

@@ -1163,4 +1163,176 @@ int sctp_client01(char *ip_addr, int echo_2_all)
 /***************************************************************************************
  * Description   : hostent - call gethostbyname
  ***************************************************************************************/
+int hostent(char *host)
+{
+	char **pptr;
+	char str[INET_ADDRSTRLEN];
+	struct hostent *hptr;
+
+	if (host && host[0] != '\0') {
+		if ((hptr = gethostbyname(host)) == NULL) {
+			err_msg("gethostbyname error for host: %s: %s", host, hstrerror(h_errno));
+			return -1;
+		}
+		printf("official hostname: %s\n", hptr->h_name);
+
+		for (pptr=hptr->h_aliases; *pptr != NULL; pptr++) {
+			printf("\t");
+		}
+
+		switch (hptr->h_addrtype) {
+			case AF_INET:
+				pptr = hptr->h_addr_list;
+				for (; *pptr != NULL; pptr++) {
+					printf("\taddress: %s\n", Inet_ntop(hptr->h_addrtype, *pptr, str, sizeof(str)));
+				}
+				break;
+			default:
+				err_ret("unknown address type");
+				break;
+		}
+	}
+	return 0;
+}
+
+/***************************************************************************************
+ * Description   : daytimetcpcli1 - call gethostbyname and getservbyname
+ ***************************************************************************************/
+int daytimetcpcli1(char *hostname, char *servname)
+{
+	int sockfd, n;
+	char recvline[MAXLINE + 1] = {0};
+	struct sockaddr_in servaddr;
+	struct in_addr **pptr;
+	struct in_addr *inetaddrp[2];
+	struct in_addr inetaddr;
+	struct hostent *hp;
+	struct servent *sp;
+
+
+	if ( (hp = gethostbyname(hostname)) == NULL) {
+		if (inet_aton(hostname, &inetaddr) == 0) {
+			err_quit("hostname error for %s: %s", hostname, hstrerror(h_errno));
+		} else {
+			inetaddrp[0] = &inetaddr;
+			inetaddrp[1] = NULL;
+			pptr = inetaddrp;
+		}
+	} else {
+		pptr = (struct in_addr **)hp->h_addr_list;
+	}
+
+	if ( (sp = getservbyname(servname, "tcp")) == NULL) {
+		err_quit("getservbyname error for %s", servname);
+	}
+
+	for ( ; *pptr != NULL; pptr++) {
+		sockfd = Socket(AF_INET, SOCK_STREAM, 0);
+
+		bzero(&servaddr, sizeof(servaddr));
+		servaddr.sin_family = AF_INET;
+		servaddr.sin_port = sp->s_port;
+		memcpy(&servaddr.sin_addr, *pptr, sizeof(struct in_addr));
+		printf("trying %s\n", Sock_ntop((SA*)&servaddr, sizeof(servaddr)));
+
+		if (connect(sockfd, (SA*)&servaddr, sizeof(servaddr)) == 0) {
+			break;
+		}
+		err_ret("connect error");
+		close(sockfd);
+	}
+
+	if (*pptr == NULL) {
+		err_quit("unable to connect");
+	}
+
+	while ( (n = Read(sockfd, recvline, MAXLINE)) > 0) {
+		recvline[n] = 0;
+		Fputs(recvline, stdout);
+	}
+	return 0;
+}
+
+/***************************************************************************************
+ * Description   : daytimetcpcli - call tcp_connect
+ ***************************************************************************************/
+int daytimetcpcli(char *hostname, char *servname)
+{
+	int				sockfd, n;
+	char			recvline[MAXLINE + 1];
+	socklen_t		len;
+	struct sockaddr_storage	ss;
+
+	sockfd = Tcp_connect(hostname, servname);
+
+	len = sizeof(ss);
+	Getpeername(sockfd, (SA *)&ss, &len);
+	printf("connected to %s\n", Sock_ntop_host((SA *)&ss, len));
+
+	while ( (n = Read(sockfd, recvline, MAXLINE)) > 0) {
+		recvline[n] = 0;	/* null terminate */
+		Fputs(recvline, stdout);
+	}
+	return 0;
+}
+
+/***************************************************************************************
+ * Description   : daytimetcpsrv1 - call tcp_listen
+ ***************************************************************************************/
+int daytimetcpsrv1(char *servname)
+{
+	int				listenfd, connfd;
+	socklen_t		len;
+	char			buff[MAXLINE];
+	time_t			ticks;
+	struct sockaddr_storage	cliaddr;
+
+	listenfd = Tcp_listen(NULL, servname, NULL);
+
+	for ( ; ; ) {
+		len = sizeof(cliaddr);
+		connfd = Accept(listenfd, (SA *)&cliaddr, &len);
+		printf("connection from %s\n", Sock_ntop((SA *)&cliaddr, len));
+
+		ticks = time(NULL);
+		snprintf(buff, sizeof(buff), "%.24s\r\n", ctime(&ticks));
+		Write(connfd, buff, strlen(buff));
+
+		Close(connfd);
+	}
+}
+
+/***************************************************************************************
+ * Description   : daytimetcpsrv2 - call tcp_listen
+ ***************************************************************************************/
+int daytimetcpsrv2(char *hostname, char *servname)
+{
+	int				listenfd, connfd;
+	socklen_t		len, addrlen;
+	char			buff[MAXLINE];
+	time_t			ticks;
+	struct sockaddr_storage	cliaddr;
+
+	listenfd = Tcp_listen(hostname, servname, &addrlen);
+
+	for ( ; ; ) {
+		len = sizeof(cliaddr);
+		connfd = Accept(listenfd, (SA *)&cliaddr, &len);
+		printf("connection from %s\n", Sock_ntop((SA *)&cliaddr, len));
+
+		ticks = time(NULL);
+		snprintf(buff, sizeof(buff), "%.24s\r\n", ctime(&ticks));
+		Write(connfd, buff, strlen(buff));
+
+		Close(connfd);
+	}
+}
+
+/***************************************************************************************
+ * Description   : daytimeudpcli1 - call udp_client
+ ***************************************************************************************/
+
+/***************************************************************************************
+ * Description   : daytimeudpsrv2
+ ***************************************************************************************/
 

@@ -59,8 +59,19 @@ int main(int argc, const char *argv[])
 	/*udp_serv01();*/
 	my_debug_msg("udp_cli09");
 	udp_cli09("127.0.0.1");
-	my_debug_msg("| test 2-9: udp_serv_select01 ==>");
-	udp_serv_select01();
+	/*my_debug_msg("| test 2-9: udp_serv_select01 ==>");*/
+	/*udp_serv_select01();*/
+
+	my_debug_msg("| test 2-11: hostent");
+	hostent("www.baidu.com");
+	my_debug_msg("| test 2-11: daytimetcpcli1");
+	daytimetcpcli1("localhost", "daytime");
+	my_debug_msg("| test 2-11: daytimetcpcli");
+	daytimetcpcli("localhost", "daytime");
+	/*my_debug_msg("| test 2-11: daytimetcpsrv1");*/
+	/*daytimetcpsrv1("9999");*/
+	/*my_debug_msg("| test 2-11: daytimetcpsrv2");*/
+	/*daytimetcpsrv2("localhost", "9999");*/
 
 	return 0;
 }
