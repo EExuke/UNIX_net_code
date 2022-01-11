@@ -46,6 +46,8 @@ int daytimetcpcli1(char *hostname, char *servname);
 int daytimetcpcli(char *hostname, char *servname);
 int daytimetcpsrv1(char *servname);
 int daytimetcpsrv2(char *hostname, char *servname);
+int daytimeudpcli1(char *hostname, char *servname);
+int daytimeudpsrv2(char *hostname, char *servname);
 /*------------------End of API Definition--------------------*/
 
 #endif /* End of _2_BASIC_SOCKET_H_ */

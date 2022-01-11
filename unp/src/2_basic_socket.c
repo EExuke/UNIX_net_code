@@ -1329,10 +1329,50 @@ int daytimetcpsrv2(char *hostname, char *servname)
 }
 
 /***************************************************************************************
- * Description   : daytimeudpcli1 - call udp_client
+ * Description   : daytimeudpcli1
  ***************************************************************************************/
+int daytimeudpcli1(char *hostname, char *servname)
+{
+	int				sockfd, n;
+	char			recvline[MAXLINE + 1];
+	socklen_t		salen;
+	struct sockaddr *sa;
+
+	sockfd = Udp_client(hostname, servname, &sa, &salen);
+
+	printf("sending to %s\n", Sock_ntop_host(sa, salen));
+	Sendto(sockfd, " ", 1, 0, sa, salen);    //send 1-byte data
+
+	n = Recvfrom(sockfd, recvline, MAXLINE, 0, NULL, NULL);
+	recvline[n] = '\0';	/* null terminate */
+	Fputs(recvline, stdout);
+
+	return 0;
+}
 
 /***************************************************************************************
  * Description   : daytimeudpsrv2
  ***************************************************************************************/
+int daytimeudpsrv2(char *hostname, char *servname)
+{
+	int sockfd;
+	ssize_t n;
+	char buff[MAXLINE];
+	time_t ticks;
+	socklen_t len;
+	struct sockaddr_storage cliaddr;
+
+	sockfd = Udp_server(servname, hostname, NULL);
+
+	for ( ; ; ) {
+		len = sizeof(cliaddr);
+		n = Recvfrom(sockfd, buff, MAXLINE, 0, (SA*)&cliaddr, &len);
+		printf("%ld datagrams from %s\n", n, Sock_ntop((SA *)&cliaddr, len));
+
+		ticks = time(NULL);
+		snprintf(buff, sizeof(buff), "%.24s\r\n", ctime(&ticks));
+		Sendto(sockfd, buff, strlen(buff), 0, (SA*)&cliaddr, len);
+	}
+}
+
 

@@ -39,16 +39,10 @@
 #### 11 名字与地址转换
 - 调用gethostbyname并显示返回的信息 hostent
 - 使用gethostbyname和getservbyname的时间获取客户程序 daytimetcpcli1
-- host_serv
-- tcp_connect
 - 用tcp_connect重新编写的时间获取客户程序 daytimetcpclin
-- tcp_listen
 - 用tcp_listen重新编写的时间获取服务器程序 daytimetcpsrv1n
 - 使用tcp_listen的协议无关时间获取服务器程序 daytimetcpsrv2
-- udp_client
 - 使用udp_client的UDP时间获取客户程序 daytimeudpcli1
-- udp_connect
-- udp_server
 - 协议无关的UDP时间获取服务器程序 daytimeudpsrv2
 
 3.高级套接字编程
