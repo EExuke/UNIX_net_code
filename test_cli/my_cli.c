@@ -19,6 +19,7 @@
 #include "unp.h"
 #include "1_intro_TCP_IP.h"
 #include "2_basic_socket.h"
+#include "4_client_server_model.h"
 
 int my_daytime_tcp_cli(const char *ip_addr, int port)
 {
@@ -73,8 +74,15 @@ int main(int argc, const char *argv[])
 	/*my_debug_msg("udp_cli01");*/
 	/*udp_cli01("127.0.0.1");*/
 
-	my_debug_msg("get 9999 from localhost");
-	daytimetcpcli("localhost", "9999");
+	/*my_debug_msg("get 9999 from localhost");*/
+	/*daytimetcpcli("localhost", "9999");*/
+
+	if (argc != 6) {
+		my_debug_msg("input error!");
+		return -1;
+	}
+	my_debug_msg("client %s %s %s %s %s\n", argv[1], argv[2], argv[3], argv[4], argv[5]);
+	test_client(argv[1], argv[2], atoi(argv[3]), atoi(argv[4]), atoi(argv[5]));
 
     return 0;
 }

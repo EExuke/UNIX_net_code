@@ -19,6 +19,7 @@
 #include "unp.h"
 #include "1_intro_TCP_IP.h"
 #include "2_basic_socket.h"
+#include "4_client_server_model.h"
 
 /***************************************************************************************
  * Function Name : main
@@ -72,6 +73,9 @@ int main(int argc, const char *argv[])
 	/*daytimetcpsrv1("9999");*/
 	/*my_debug_msg("| test 2-11: daytimetcpsrv2");*/
 	/*daytimetcpsrv2("localhost", "9999");*/
+
+	my_debug_msg("| test 4-30: model_serv01");
+	model_serv01("localhost", "9999");
 
 	return 0;
 }
