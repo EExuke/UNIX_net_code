@@ -18,6 +18,7 @@
 #include "unp.h"
 #include "unpthread.h"
 #include "4_client_server_model.h"
+#include	<sys/mman.h>
 
 /**************************************************************************** **
  * tcp测试用客户程序
